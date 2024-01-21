@@ -108,23 +108,15 @@ class PathFinder:
 
     def follow_path(self):
         self.turns = []  # Reset turns
-        for i in range(1, len(self.path) - 10, 5):
+        for i in range(1, len(self.path) - 10):
             current_point = self.path[i]
-            next_point = self.path[i + 5]
-            next_next_point = self.path[i + 10]
-            
-            vector_next = np.array(next_point) - np.array(current_point)
-            vector_next_next = np.array(next_next_point) - np.array(next_point)
-            
-            direction_next = np.arctan2(vector_next[0], vector_next[1]) * 180 / np.pi
-            direction_next_next = np.arctan2(vector_next_next[0], vector_next_next[1]) * 180 / np.pi
-
-            direction_next = (direction_next + 360) % 360 # Convert to positive angle (CCW) in degr
-            direction_next_next = (direction_next_next + 360) % 360
-
-            if abs(direction_next_next - direction_next) > 40: # calculates if a turn was made by comparing change in direction
-                print(f'current point: {current_point}, direction: {abs(direction_next_next - direction_next)}')
-                self.turns.append((current_point, direction_next_next - direction_next))
+            next_point = self.path[i + 10]
+            vector = np.array(next_point) - np.array(current_point)
+            direction = np.arctan2(vector[0], vector[1]) * 180 / np.pi
+            direction = (direction + 360) % 360 # Convert to positive angle (CCW) in degr
+            if direction > 60:
+                print(f'current point: {current_point}, direction: {abs(direction -360)}')
+                self.turns.append((current_point, abs(direction -360)))
 
             # if i + 2 < len(self.path):
             #     next_next_point = self.path[i + 2]
@@ -137,7 +129,7 @@ class PathFinder:
             #         self.turns.append((current_point, turn_type))
 
         print(f'predicted: {self.turns}')
-        return (self.turns) # YOU WILL HAVE TO TAKE OUT THE DIRECTION AND STORE IT SOMEWHERE FOR NEXT TIME YOU RUN THIS FUNCTION BECAUSE THAT WILL BE THE "prev" DIRECTION
+        return self.turns
     
     def verify_turns(self):
         verified_turns = []
@@ -177,26 +169,21 @@ class PathFinder:
         plt.show()
 
 image = Image.open('maze.jpg')
-
 # image = image.convert('L')
 new_image = image.resize((600, 800))
-new_image.save("image_2.jpg", quality=50) 
+new_image.save("image_2.jpg", quality=21) 
 
 img = cv2.imread("image_2.jpg")  # Read image 
-img = cv2.blur(img, (2,2))
   
 # Setting parameter values 
-t_lower = 280 # Lower Threshold 
-t_upper = 285  # Upper threshold 
+t_lower = 275 # Lower Threshold 
+t_upper = 280  # Upper threshold 
   
 # Applying the Canny Edge filter 
 edge = cv2.Canny(img, t_lower, t_upper) 
-edge = cv2.blur(edge, (3,3))
 cv2.imwrite('edge.jpg', edge)
 
-
 img = cv2.imread('edge.jpg')  # Use the filename you saved your Canny edges image as
-img = cv2.blur(img, (8,8))
 
 # Convert the image to grayscale
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -213,10 +200,11 @@ filled_image = np.zeros_like(img)
 # Draw the largest contour on the black image
 cv2.drawContours(filled_image, contours, largest_contour_index, (255, 255, 255), thickness=cv2.FILLED)
 
-
 # Add the original image and the filled image
 result = cv2.add(img, filled_image)
-cv2.imwrite('smoothed_contour_filled.jpg', result)
+
+# Save the result
+cv2.imwrite('largest_contour_filled.jpg', result)
 
 path_finder = PathFinder(result)
 path_finder.show()
