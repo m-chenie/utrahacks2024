@@ -177,7 +177,7 @@ class PathFinder:
             next = turnscopy[i]
             d = np.sqrt(((curr[0][0]-next[0][0])**2) + ((curr[0][1]-next[0][1])**2))
             dscaled = d*29.7/800
-            a = 'R' if (curr[1]>0) else 'L'
+            a = 'R' if (next[1]>0) else 'L'
             instructions.append([dscaled, a])
 
         # for turn_point, turn_directions in self.turns:
