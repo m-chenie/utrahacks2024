@@ -1,3 +1,4 @@
+
 # Import essential libraries 
 import requests 
 import cv2 
@@ -10,13 +11,13 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-# arduino_port = "COM3" # change this to your Arduino port
-# arduino = serial.Serial(arduino_port, 9600, timeout=1)
+arduino_port = "COM3"
+arduino = serial.Serial(arduino_port, 9600, timeout=1)
 time.sleep(2)
 
 # command to run the program: python3 plswork.py    
 
-# url = "http://100.66.148.7:8080/shot.jpg"
+url = "http://100.66.148.7:8080/shot.jpg"
   
 # # While loop to continuously fetching data from the Url 
 # while True: 
@@ -60,28 +61,16 @@ class PathFinder:
             return self.get_instructions()
 
     def demo(self, event):
-        num = 1
         x, y = int(event.xdata), int(event.ydata)
-        if num == 1:
-            if event.button == 1:  # Left mouse button for start point
-                self.start = (720, 372)
-            elif event.button == 3:
-                self.end = (183, 534)
-                self.find_shortest_path()
-                self.follow_path()
-                # self.verify_turns()
-                self.draw_path()
-                return self.get_instructions()
-        if num == 2:
-            if event.button == 1:  # Left mouse button for start point
-                self.start = (701, 364)
-            elif event.button == 3:
-                self.end = (81, 238)
-                self.find_shortest_path()
-                self.follow_path()
-                # self.verify_turns()
-                self.draw_path()
-                return self.get_instructions()
+        if event.button == 1:  # Left mouse button for start point
+            self.start = (701, 364)
+        elif event.button == 3:
+            self.end = (81, 238)
+            self.find_shortest_path()
+            self.follow_path()
+            # self.verify_turns()
+            self.draw_path()
+            return self.get_instructions()
 
     # Define a cost function that penalizes changes in direction
     def cost_function(self, u, v, e, prev_edge=None):
@@ -148,7 +137,7 @@ class PathFinder:
             #         self.turns.append((current_point, turn_type))
 
         print(f'predicted: {self.turns}')
-        return (self.turns) 
+        return (self.turns) # YOU WILL HAVE TO TAKE OUT THE DIRECTION AND STORE IT SOMEWHERE FOR NEXT TIME YOU RUN THIS FUNCTION BECAUSE THAT WILL BE THE "prev" DIRECTION
     
     def verify_turns(self):
         verified_turns = []
@@ -197,16 +186,28 @@ class PathFinder:
         #     if turn_directions > 0:
         #         # right turn
         #     else:
+        instructions.pop()
         print(instructions)
         
-        instructions_arduino = ""
-        for row in range(len(instructions)-1): # exclude last row
+        for row in instructions:
             #arduino.write(bytes("R", "utf-8"))
             
-            instructions_arduino += str(instructions[row][0]) + " " + str(instructions[row][1]) + ","
+            arduino.write(str(row[0]).encode()) #feed
             
-        print("arduino instructions:", instructions_arduino)
-        # arduino.write(instructions_arduino.encode()) #feed
+            while True:
+                wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
+                if wait == "G":
+                    print("G G G G baby baby")
+                    break
+            
+            arduino.write(str(row[1]).encode()) #turn
+            
+            while True:
+                wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
+                if wait == "G":
+                    print("GGGG bby bby")
+                    break
+            
         return instructions
 
     def show(self):
@@ -265,11 +266,6 @@ cv2.waitKey(0)
 cv2.destroyAllWindows() 
 
 """
-
-d:
-Start point: (720, 372)
-End point: (183, 534)
-
 maze5:
 Start point: (701, 364)
 End point: (81, 238)
