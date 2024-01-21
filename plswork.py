@@ -7,6 +7,13 @@ from PIL import Image
 import networkx as nx
 import matplotlib.pyplot as plt
 
+import serial
+import time
+
+arduino_port = "COM6"
+arduino = serial.Serial(arduino_port, 9600, timeout=1)
+time.sleep(2)
+
 # command to run the program: python3 plswork.py    
 
 url = "http://100.66.148.7:8080/shot.jpg"
@@ -168,6 +175,26 @@ class PathFinder:
         #     else:
         instructions.pop()
         print(instructions)
+        
+        for row in instructions:
+            #arduino.write(bytes("R", "utf-8"))
+            
+            arduino.write(str(row[0]).encode()) #feed
+            
+            while True:
+                wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
+                if wait == "G":
+                    print("G G G G baby baby")
+                    break
+            
+            arduino.write(str(row[1]).encode()) #turn
+            
+            while True:
+                wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
+                if wait == "G":
+                    print("GGGG bby bby")
+                    break
+            
         return instructions
 
     def show(self):
