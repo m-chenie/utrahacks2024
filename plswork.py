@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-arduino_port = "COM3" # change this to your Arduino port
-arduino = serial.Serial(arduino_port, 9600, timeout=1)
+# arduino_port = "COM3" # change this to your Arduino port
+# arduino = serial.Serial(arduino_port, 9600, timeout=1)
 time.sleep(2)
 
 # command to run the program: python3 plswork.py    
@@ -61,7 +61,6 @@ class PathFinder:
 
     def demo(self, event):
         num = 3 # !1 for maze5, 2 for d
-
 
         x, y = int(event.xdata), int(event.ydata)
         if num == 1:
@@ -223,7 +222,7 @@ class PathFinder:
             
             instructions_arduino += str(instructions[row][0]) + " " + str(instructions[row][1]) + ","
             
-        print("arduino instructions:", instructions_arduino)
+        # print("arduino instructions:", instructions_arduino)
         arduino.write(instructions_arduino.encode()) #feed
         return instructions
 
