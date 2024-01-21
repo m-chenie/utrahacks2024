@@ -49,29 +49,8 @@ class PathFinder:
             self.follow_path()
             # self.verify_turns()
             self.draw_path()
+            return self.get_instructions()
 
-    # def find_shortest_path(self):
-    #     # Create a binary mask with the largest contour
-    #     gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-    #     _, mask = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
-    #     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    #     largest_contour_index = max(range(len(contours)), key=lambda i: cv2.contourArea(contours[i]))
-    #     mask = np.zeros_like(gray)
-    #     cv2.drawContours(mask, contours, largest_contour_index, (255), thickness=cv2.FILLED)
-
-    #     # Find the coordinates of white pixels in the mask
-    #     white_pixels = np.column_stack(np.where(mask > 0))
-
-    #     # Create a graph representation of the image
-    #     G = nx.grid_2d_graph(mask.shape[0], mask.shape[1])
-
-    #     # Remove nodes corresponding to black pixels
-    #     black_pixels = np.column_stack(np.where(mask == 0))
-    #     for pixel in black_pixels:
-    #         G.remove_node(tuple(pixel))
-
-    #     # Find the shortest path using A* algorithm
-    #     self.path = nx.astar_path(G, self.start, self.end)
 
     # Define a cost function that penalizes changes in direction
     def cost_function(self, u, v, e, prev_edge=None):
@@ -122,9 +101,10 @@ class PathFinder:
             direction_next = (direction_next + 360) % 360 # Convert to positive angle (CCW) in degr
             direction_next_next = (direction_next_next + 360) % 360
 
-            if abs(direction_next_next - direction_next) > 40: # calculates if a turn was made by comparing change in direction
-                print(f'current point: {current_point}, direction: {abs(direction_next_next - direction_next)}')
+            if abs(direction_next_next - direction_next) > 30: # calculates if a turn was made by comparing change in direction
+                print(f'current point: {current_point}, direction: {direction_next_next - direction_next}')
                 self.turns.append((current_point, direction_next_next - direction_next))
+                #self.turns.append((current_point, abs(direction_next_next - direction_next)))
 
             # if i + 2 < len(self.path):
             #     next_next_point = self.path[i + 2]
@@ -143,13 +123,7 @@ class PathFinder:
         verified_turns = []
         for turn_point, current_direction in self.turns:
             index = self.path.index(turn_point)
-            angle_before = self.calculate_angle(index - 5, index)
-            angle_after = self.calculate_angle(index, index + 5)
-            
-            print(f'angle before: {angle_before}, angle after: {angle_after}')
-
-            if abs(angle_before - 90) > 60 or abs(angle_after - 90) > 60:
-                verified_turns.append((turn_point, current_direction))
+            # direction_current = 
 
         self.turns = verified_turns
         print(f'\n \n verified: {self.turns}')
@@ -172,11 +146,34 @@ class PathFinder:
         plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
         plt.draw()
 
+    
+    def get_instructions(self):
+        instructions = []
+        # [[distance, action], ...]
+        turnscopy = self.turns.copy()
+        turnscopy.append([self.end,0])
+        turnscopy.append([self.start,0])
+        for i in range(len(turnscopy)):
+            curr = turnscopy[i-1]
+            next = turnscopy[i]
+            d = np.sqrt(((curr[0][0]-next[0][0])**2) + ((curr[0][1]-next[0][1])**2))
+            dscaled = d*(29.7/11.4)*(2.54/96)
+            a = 'R' if (curr[1]>0) else 'L'
+            instructions.append([dscaled, a])
+
+        # for turn_point, turn_directions in self.turns:
+        #     # turn point = (y,x)
+        #     if turn_directions > 0:
+        #         # right turn
+        #     else:
+        instructions.pop()
+        print(instructions)
+        return instructions
 
     def show(self):
         plt.show()
 
-image = Image.open('maze.jpg')
+image = Image.open('maze5.jpg')
 
 # image = image.convert('L')
 new_image = image.resize((600, 800))
@@ -227,3 +224,14 @@ cv2.imshow('edge', edge)
 
 cv2.waitKey(0) 
 cv2.destroyAllWindows() 
+
+"""
+maze5:
+Start point: (701, 364)
+End point: (81, 238)
+[((515, 182), -42.273689006093775), ((513, 185), 42.273689006093775), ((464, 216), -33.69006752597977), ((326, 218), 42.273689006093775), ((90, 253), -75.96375653207349)]
+
+Start point: (709, 152)
+End point: (119, 237)
+predicted: [((658, 152), 33.69006752597977), ((653, 152), -33.69006752597977), ((650, 154), 33.69006752597977), ((638, 157), -33.69006752597977), ((506, 190), -42.273689006093775), ((504, 193), 42.273689006093775), ((329, 218), 33.69006752597977), ((166, 260), -33.69006752597977), ((123, 253), -75.96375653207349)]
+"""
