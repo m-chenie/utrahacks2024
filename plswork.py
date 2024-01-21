@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-# arduino_port = "COM3" # change this to your Arduino port
-# arduino = serial.Serial(arduino_port, 9600, timeout=1)
+arduino_port = "COM3" # change this to your Arduino port
+arduino = serial.Serial(arduino_port, 9600, timeout=1)
 time.sleep(2)
 
 # command to run the program: python3 plswork.py    
@@ -60,7 +60,9 @@ class PathFinder:
             return self.get_instructions()
 
     def demo(self, event):
-        num = 1
+        num = 3 # !1 for maze5, 2 for d
+
+
         x, y = int(event.xdata), int(event.ydata)
         if num == 1:
             if event.button == 1:  # Left mouse button for start point
@@ -77,6 +79,18 @@ class PathFinder:
                 self.start = (701, 364)
             elif event.button == 3:
                 self.end = (81, 238)
+                self.find_shortest_path()
+                self.follow_path()
+                # self.verify_turns()
+                self.draw_path()
+                return self.get_instructions()
+            
+        if num == 3: # ! demo left
+           
+            if event.button == 1:  # Left mouse button for start point
+                self.start = (654, 291)
+            elif event.button == 3:
+                self.end = (168, 128)
                 self.find_shortest_path()
                 self.follow_path()
                 # self.verify_turns()
@@ -132,7 +146,8 @@ class PathFinder:
             direction_next = (direction_next + 360) % 360 # Convert to positive angle (CCW) in degr
             direction_next_next = (direction_next_next + 360) % 360
 
-            if abs(direction_next_next - direction_next) > 30: # calculates if a turn was made by comparing change in direction
+            # ! thereshold angle
+            if abs(direction_next_next - direction_next) > 35: # calculates if a turn was made by comparing change in direction
                 print(f'current point: {current_point}, direction: {direction_next_next - direction_next}')
                 self.turns.append((current_point, direction_next_next - direction_next))
                 #self.turns.append((current_point, abs(direction_next_next - direction_next)))
@@ -188,7 +203,11 @@ class PathFinder:
             curr = turnscopy[i-1]
             next = turnscopy[i]
             d = np.sqrt(((curr[0][0]-next[0][0])**2) + ((curr[0][1]-next[0][1])**2))
-            dscaled = d*29.7/800
+
+            # ! here
+            # dscaled = d*29.7/800 # for maze5
+            dscaled = d*12.1/800 # for demo
+
             a = 'R' if (next[1]>0) else 'L'
             instructions.append([round(dscaled,2), a])
 
@@ -201,18 +220,18 @@ class PathFinder:
         
         instructions_arduino = ""
         for row in range(len(instructions)-1): # exclude last row
-            #arduino.write(bytes("R", "utf-8"))
             
             instructions_arduino += str(instructions[row][0]) + " " + str(instructions[row][1]) + ","
             
         print("arduino instructions:", instructions_arduino)
-        # arduino.write(instructions_arduino.encode()) #feed
+        arduino.write(instructions_arduino.encode()) #feed
         return instructions
 
     def show(self):
         plt.show()
 
-image = Image.open('maze5.jpg')
+# ! change maze here
+image = Image.open('demo.jpg')
 
 # image = image.convert('L')
 new_image = image.resize((600, 800))
