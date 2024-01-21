@@ -176,7 +176,7 @@ class PathFinder:
             curr = turnscopy[i-1]
             next = turnscopy[i]
             d = np.sqrt(((curr[0][0]-next[0][0])**2) + ((curr[0][1]-next[0][1])**2))
-            dscaled = d*(29.7/11.4)*(2.54/96)
+            dscaled = d*29.7/800
             a = 'R' if (curr[1]>0) else 'L'
             instructions.append([dscaled, a])
 
