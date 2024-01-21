@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-arduino_port = "COM6"
-arduino = serial.Serial(arduino_port, 9600, timeout=1)
+arduino_port = "COM6" # change this to your Arduino port
+# arduino = serial.Serial(arduino_port, 9600, timeout=1)
 time.sleep(2)
 
 # command to run the program: python3 plswork.py    
 
-url = "http://100.66.148.7:8080/shot.jpg"
+# url = "http://100.66.148.7:8080/shot.jpg"
   
 # # While loop to continuously fetching data from the Url 
 # while True: 
@@ -42,8 +42,8 @@ class PathFinder:
         # Create a figure and connect the event handlers
         self.fig, self.ax = plt.subplots()
         self.ax.imshow(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))
-        self.fig.canvas.mpl_connect('button_press_event', self.demo)
-        # self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+        # self.fig.canvas.mpl_connect('button_press_event', self.demo)
+        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
     def on_click(self, event):
         x, y = int(event.xdata), int(event.ydata)
@@ -185,28 +185,29 @@ class PathFinder:
         #     if turn_directions > 0:
         #         # right turn
         #     else:
-        instructions.pop()
         print(instructions)
         
+        instructions_arduino = ""
         for row in instructions:
             #arduino.write(bytes("R", "utf-8"))
             
-            arduino.write(str(row[0]).encode()) #feed
+            instructions_arduino += str(row[0]) + " " + str(row[1]) + ", "
+            # arduino.write(str(row[0]).encode()) #feed
             
-            while True:
-                wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
-                if wait == "G":
-                    print("G G G G baby baby")
-                    break
+            # while True:
+            #     wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
+            #     if wait == "G":
+            #         print("G G G G baby baby")
+            #         break
             
-            arduino.write(str(row[1]).encode()) #turn
+            # arduino.write(str(row[1]).encode()) #turn
             
-            while True:
-                wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
-                if wait == "G":
-                    print("GGGG bby bby")
-                    break
-            
+            # while True:
+            #     wait = arduino.readline().decode().strip() #supposed to wait until arduino prints "G" in the serial monitor
+            #     if wait == "G":
+            #         print("GGGG bby bby")
+            #         break
+        print(instructions_arduino)
         return instructions
 
     def show(self):
