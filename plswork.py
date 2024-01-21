@@ -35,7 +35,8 @@ class PathFinder:
         # Create a figure and connect the event handlers
         self.fig, self.ax = plt.subplots()
         self.ax.imshow(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))
-        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+        self.fig.canvas.mpl_connect('button_press_event', self.demo)
+        # self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
     def on_click(self, event):
         x, y = int(event.xdata), int(event.ydata)
@@ -51,6 +52,17 @@ class PathFinder:
             self.draw_path()
             return self.get_instructions()
 
+    def demo(self, event):
+        x, y = int(event.xdata), int(event.ydata)
+        if event.button == 1:  # Left mouse button for start point
+            self.start = (701, 364)
+        elif event.button == 3:
+            self.end = (81, 238)
+            self.find_shortest_path()
+            self.follow_path()
+            # self.verify_turns()
+            self.draw_path()
+            return self.get_instructions()
 
     # Define a cost function that penalizes changes in direction
     def cost_function(self, u, v, e, prev_edge=None):
